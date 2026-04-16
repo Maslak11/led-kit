@@ -9,6 +9,14 @@ const MODELS = {
     maxW: 100,            // maks. pobór mocy [W]
     kg: 8.5,              // waga [kg]
     pitch: 2.84           // pixel pitch [mm]
+  },
+  p248: {
+    name: 'P2.48 Flat',
+    wmm: 496, hmm: 496,   // gabaryty fizyczne kabinetu [mm]
+    pw: 200, ph: 200,     // rozdzielczość kabinetu [px] — 496mm / 2.48mm = 200px
+    maxW: 197,            // maks. pobór mocy [W] — 800W/m² × (0.496×0.496)m²
+    kg: 7.0,              // waga [kg]
+    pitch: 2.48           // pixel pitch [mm]
   }
 };
 
