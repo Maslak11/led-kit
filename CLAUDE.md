@@ -18,10 +18,13 @@ led/
 - **Host:** `maslak.ftp.dhosting.pl`
 - **Login:** `id7die_ledkit`
 - **Katalog:** `~/matlak.stream-fai9/public_html/ledkit/`
-- **Komenda upload:**
+- **Komenda upload (deploy wszystkich plików):**
   ```bash
-  curl --ftp-create-dirs -u "id7die_ledkit:<hasło>" -T plik.html "ftp://maslak.ftp.dhosting.pl/matlak.stream-fai9/public_html/ledkit/plik.html"
+  cd /path/to/led && for f in index.html css/style.css js/models.js js/ui.js js/calculator.js js/canvas.js js/diagrams.js js/app.js assets/logo.png; do
+    curl -s --ftp-create-dirs -u "id7die_ledkit:<hasło>" -T "$f" "ftp://maslak.ftp.dhosting.pl/matlak.stream-fai9/public_html/ledkit/$f" && echo "OK $f" || echo "FAIL $f"
+  done
   ```
+- **WAŻNE:** FTP root dla tego konta to `/` — nie powtarzaj `matlak.stream-fai9` w ścieżce, jest już w strukturze katalogów.
 
 ## Dane techniczne (hardcoded w JS)
 
