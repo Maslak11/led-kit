@@ -1,0 +1,18 @@
+# System
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+*.tmp
+*.bak
+
+# Node (jeśli kiedyś będzie build)
+node_modules/
+dist/
+.env
+.env.*
+
+# Logs
+*.log

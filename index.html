@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LED Kit Kalkulator — matlak.stream</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <img src="assets/logo.png" alt="matlak.stream" onerror="this.style.display='none'">
+  <div class="header-text">
+    <h1>LED Kit Kalkulator</h1>
+    <p>Planowanie instalacji ekranów LED · Novastar VX1000</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- MODEL -->
+  <div class="model-grid">
+    <div class="model-card active" onclick="selectModel('dazzle', this)">
+      <span class="model-badge">P2.84</span><span class="model-info">ESDLumen Dazzle Plus</span>
+      <div class="model-sub">500×500mm · 176×176px · 100W/kab.</div>
+    </div>
+  </div>
+
+  <!-- CONTROL BAR -->
+  <div class="ctrl-bar">
+    <div class="ctrl-group">
+      <div class="ctrl-label">Kolumny</div>
+      <button class="ctrl-btn" onclick="adj('cols', -1)">−</button>
+      <input class="ctrl-val" id="v-cols" type="number" value="6" min="1" max="50" oninput="calc()">
+      <button class="ctrl-btn" onclick="adj('cols', 1)">+</button>
+    </div>
+    <div class="ctrl-sep"></div>
+    <div class="ctrl-summary" id="summary-bar">— ładowanie —</div>
+    <div class="ctrl-sep"></div>
+    <div class="ctrl-group">
+      <button class="ctrl-btn" onclick="adj('rows', -1)">−</button>
+      <input class="ctrl-val" id="v-rows" type="number" value="4" min="1" max="30" oninput="calc()">
+      <button class="ctrl-btn" onclick="adj('rows', 1)">+</button>
+      <div class="ctrl-label">Wiersze</div>
+    </div>
+  </div>
+
+  <!-- INPUT MODE -->
+  <div class="input-card">
+    <div class="input-tabs">
+      <button class="itab active" onclick="switchITab('A', this)">Kabinety</button>
+      <button class="itab" onclick="switchITab('B', this)">Wymiary (m)</button>
+      <button class="itab" onclick="switchITab('C', this)">Rozdzielczość (px)</button>
+    </div>
+    <div id="it-A" class="itab-content active">
+      <div class="field">
+        <label>Szerokość (kab.)</label>
+        <input type="number" id="A-cols" value="6" min="1" max="50" oninput="fromInput('A-cols','v-cols');calc()">
+        <input type="range" min="1" max="30" value="6" oninput="syncBoth(this,'A-cols','v-cols');calc()">
+      </div>
+      <div class="field">
+        <label>Wysokość (kab.)</label>
+        <input type="number" id="A-rows" value="4" min="1" max="30" oninput="fromInput('A-rows','v-rows');calc()">
+        <input type="range" min="1" max="20" value="4" oninput="syncBoth(this,'A-rows','v-rows');calc()">
+      </div>
+      <div class="hint" id="A-hint">6×4 → 3.00m × 2.00m</div>
+    </div>
+    <div id="it-B" class="itab-content">
+      <div class="field"><label>Szerokość (m)</label><input type="number" id="B-w" value="3.0" min="0.5" max="25" step="0.1" oninput="calc()"></div>
+      <div class="field"><label>Wysokość (m)</label><input type="number" id="B-h" value="2.0" min="0.5" max="15" step="0.1" oninput="calc()"></div>
+      <div class="hint" id="B-hint"></div>
+    </div>
+    <div id="it-C" class="itab-content">
+      <div class="field"><label>Szerokość (px)</label><input type="number" id="C-w" value="1920" min="176" step="176" oninput="calc()"></div>
+      <div class="field"><label>Wysokość (px)</label><input type="number" id="C-h" value="1080" min="176" step="176" oninput="calc()"></div>
+      <div class="hint" id="C-hint"></div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas-section">
+    <div class="view-toolbar">
+      <div class="view-tabs">
+        <button class="vtab active" onclick="setView('front', this)">Widok przodu</button>
+        <button class="vtab" onclick="setView('back', this)">Widok tyłu</button>
+      </div>
+      <div class="view-options">
+        <label class="chk-label" id="opt-person-wrap">
+          <input type="checkbox" id="opt-person" checked onchange="redraw()">
+          <span class="chk-box"></span>Sylwetka człowieka
+        </label>
+        <label class="chk-label" id="opt-power-wrap" style="display:none">
+          <input type="checkbox" id="opt-power" checked onchange="redraw()">
+          <span class="chk-box" style="border-color:#ef4444"></span><span style="color:#ef4444;font-weight:700">●</span> Zasilanie
+        </label>
+        <label class="chk-label" id="opt-data-wrap" style="display:none">
+          <input type="checkbox" id="opt-data" checked onchange="redraw()">
+          <span class="chk-box" style="border-color:#33b5d8"></span><span style="color:#33b5d8;font-weight:700">●</span> Dane
+        </label>
+        <div id="opt-flow-wrap" style="display:none;align-items:center;gap:6px">
+          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Dataflow:</span>
+          <div class="view-tabs" style="padding:2px;gap:2px">
+            <button class="vtab active" id="flow-h" onclick="setFlow('H', this)" style="padding:5px 10px;font-size:11px">⟷ Poziomy</button>
+            <button class="vtab" id="flow-v" onclick="setFlow('V', this)" style="padding:5px 10px;font-size:11px">⟸↕ Pionowy</button>
+          </div>
+        </div>
+        <label class="chk-label" style="gap:8px">
+          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Proporcje:</span>
+          <select class="ar-select" id="ar-sel" onchange="redraw()">
+            <option value="">Brak</option>
+            <option value="16:9">16:9</option>
+            <option value="4:3">4:3</option>
+            <option value="21:9">21:9</option>
+            <option value="9:16">9:16 (pion)</option>
+            <option value="1:1">1:1</option>
+            <option value="2.35:1">2.35:1 (kino)</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <div class="canvas-wrapper">
+      <canvas id="mainCanvas"></canvas>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="section-title">Wyniki kalkulacji</div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-v" id="s-total">—</div><div class="stat-l">Kabinety</div></div>
+    <div class="stat-card"><div class="stat-v" id="s-dim">—</div><div class="stat-l">Wymiary (m)</div></div>
+    <div class="stat-card"><div class="stat-v" id="s-res">—</div><div class="stat-l">Rozdzielczość</div></div>
+    <div class="stat-card"><div class="stat-v" id="s-ar">—</div><div class="stat-l">Proporcje</div></div>
+    <div class="stat-card"><div class="stat-v" id="s-px">—</div><div class="stat-l">Piksele</div></div>
+    <div class="stat-card"><div class="stat-v" id="s-wt">—</div><div class="stat-l">Waga (kg)</div></div>
+    <div class="stat-card"><div class="stat-v" id="s-pw">—</div><div class="stat-l">Maks. moc (W)</div></div>
+  </div>
+
+  <!-- POWER -->
+  <div class="section-title">Zasilanie i rozdzielnia</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Zapotrzebowanie na prąd</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:12px;color:var(--muted)">
+        <span style="font-weight:700;text-transform:uppercase;letter-spacing:.05em">Obwód:</span>
+        <div class="view-tabs" style="padding:2px;gap:2px">
+          <button class="vtab active" id="pc-16" onclick="selectCircuit('16', this)" style="padding:5px 12px;font-size:11px">16A</button>
+          <button class="vtab" id="pc-32" onclick="selectCircuit('32', this)" style="padding:5px 12px;font-size:11px">32A</button>
+        </div>
+        <input type="hidden" id="p-circ-sel" value="16">
+        <span style="color:var(--muted);font-size:11px">Powercon True1 230V z rozdzielni</span>
+      </div>
+      <div class="power-rec" id="power-rec">—</div>
+      <div class="stat-grid2">
+        <div class="stat-card"><div class="stat-v" id="p-kw">—</div><div class="stat-l">Pobór (kW)</div></div>
+        <div class="stat-card"><div class="stat-v" id="p-amp">—</div><div class="stat-l">Prąd (A)</div></div>
+        <div class="stat-card"><div class="stat-v" id="p-chains">—</div><div class="stat-l">Obwody Powercon</div></div>
+        <div class="stat-card"><div class="stat-v" id="p-perchain">—</div><div class="stat-l">Kabinetów/obwód</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Schemat zasilania</div>
+      <div class="diagram-box"><svg id="pwr-svg" style="width:100%;overflow:visible"></svg></div>
+      <div class="legend" id="pwr-legend"></div>
+    </div>
+  </div>
+
+  <!-- VX1000 -->
+  <div class="section-title">Wpięcie do Novastar VX1000</div>
+  <div class="info-box">
+    <strong>Novastar VX1000</strong> — 10 portów Ethernet, maks. 6.5 mln px łącznie, ~20 kabinetów Dazzle Plus na port. Kabinety łączone daisy chain (kabel CAT6 między kabinetami).
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Przypisanie portów</div>
+      <table class="cable-table">
+        <thead><tr><th>Port</th><th>Kabinetów</th><th>Numery</th><th>Piksele</th></tr></thead>
+        <tbody id="vx-tbody"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Schemat VX1000</div>
+      <div class="diagram-box"><svg id="vx-svg" style="width:100%;overflow:visible"></svg></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  matlak.stream LED Kit Kalkulator · ESDLumen Dazzle Plus P2.84 · Novastar VX1000<br>
+  Wartości szacunkowe — skonsultuj z inżynierem AV przed instalacją · <a href="https://matlak.stream">matlak.stream</a>
+</footer>
+
+<script src="js/models.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/calculator.js"></script>
+<script src="js/canvas.js"></script>
+<script src="js/diagrams.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
